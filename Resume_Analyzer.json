@@ -1,0 +1,410 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1GRkN7En7dSfXnsVWKxt3nAViJArGoEgDMhzxT5gkwq0",
+          "mode": "list",
+          "cachedResultName": "Contact Information (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GRkN7En7dSfXnsVWKxt3nAViJArGoEgDMhzxT5gkwq0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1025634662,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GRkN7En7dSfXnsVWKxt3nAViJArGoEgDMhzxT5gkwq0/edit#gid=1025634662"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e2f450a4-e3cf-4455-ae18-5f0b4d62e42f",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "PJLEqxFmfVnZdZYt",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{$json[\"Upload\"].split(\"id=\")[1]}}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "03b8e639-e847-4cf9-9c25-c585dae38177",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1RwLj14R9TQu5cTX",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "551c01c5-65bc-43a3-8aa4-c7cea28010bf",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyAFx2QJNDvrSkMw2hs2JKBCVmEH0ujmf_U"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Analyze the provided resume text against the requirements specified in the Job Description text. Extract the requested fields based on how well the candidate matches the role criteria.\\n\\nJob Description Text:\\n\" + $json.targetJobDescription + \"\\n\\nResume Text:\\n\" + $json.text\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\",\n    \"responseSchema\": {\n      \"type\": \"OBJECT\",\n      \"properties\": {\n        \"candidate_name\": { \"type\": \"STRING\" },\n        \"ats_score\": { \"type\": \"INTEGER\", \"description\": \"An ATS match score out of 100 based strictly on the provided Job Description requirements\" },\n        \"skills\": { \"type\": \"STRING\", \"description\": \"Comma-separated list of skills present in the resume that match the Job Description\" },\n        \"missing_skills\": { \"type\": \"STRING\", \"description\": \"Comma-separated list of critical skills or requirements requested in the Job Description but missing from the resume\" },\n        \"recommendation\": { \"type\": \"STRING\", \"description\": \"A brief 2-3 sentence alignment summary/hiring recommendation rationale\" }\n      },\n      \"required\": [\"candidate_name\", \"ats_score\", \"skills\", \"missing_skills\", \"recommendation\"]\n    }\n  }\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "9f2bd01d-0026-4a93-8e9b-43b0aa52dc1f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12W7tY_4YU4bdxfDofdYU4fwL5zP_E1wJ9GfBl3o5hpM",
+          "mode": "list",
+          "cachedResultName": "Candidate Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12W7tY_4YU4bdxfDofdYU4fwL5zP_E1wJ9GfBl3o5hpM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12W7tY_4YU4bdxfDofdYU4fwL5zP_E1wJ9GfBl3o5hpM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ATS Score",
+              "displayName": "ATS Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills",
+              "displayName": "Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recommendation",
+              "displayName": "Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Missing Skills",
+              "displayName": "Missing Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "candidates",
+              "displayName": "candidates",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "usageMetadata",
+              "displayName": "usageMetadata",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "modelVersion",
+              "displayName": "modelVersion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "responseId",
+              "displayName": "responseId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "e13e0554-d5fb-4c49-85e4-a9f6fb98585a",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DKSi3UWRlGK7JPKv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0f6fd4a2-bcb6-49fc-8681-5df675f32443",
+              "name": "Name",
+              "value": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"])[\"candidate_name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "9625980a-4363-4405-979a-1e09450f9811",
+              "name": "ATS Score",
+              "value": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"])[\"ats_score\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "06fcca24-fea9-4e49-9c20-00e6b9fcdfb9",
+              "name": "Skills",
+              "value": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"])[\"skills\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f98c4d01-fab4-45bb-b456-2d19ece0ab33",
+              "name": "Recommendation",
+              "value": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"])[\"recommendation\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "77e43c13-b7bc-40d8-bb8b-fb76d8fbcc2d",
+              "name": "Missing Skills",
+              "value": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"])[\"missing_skills\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f54f0ac7-dfe5-473e-85c6-7cbd60d483df",
+              "name": "Shortlisted",
+              "value": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"])[\"ats_score\"] >= 80 ? \"Yes\" : \"No\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "d259ce9d-c9f6-4426-9f40-31488ae8b96a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "67044494-33b9-4305-bb8c-4e2f5ccff754",
+              "name": "targetJobDescription",
+              "value": "Job Title: Software Engineer Intern  Role Overview: We are looking for a passionate, detail-oriented Software Engineer Intern to join our engineering team. In this role, you will work alongside senior engineers to design, build, and deploy scalable web applications and features. You will contribute across the full software development lifecycle—from brainstorming ideas to writing clean code and testing deployments.  Key Responsibilities: - Collaborating with cross-functional teams to design and build responsive front-end user interfaces and robust back-end APIs. - Writing clean, maintainable, and well-documented code using modern web development frameworks. - Troubleshooting, debugging, and optimizing web applications to ensure maximum performance and cross-device compatibility. - Participating in regular code reviews, agile sprints, and technical team brainstorming sessions.  Required Skills & Qualifications: - Solid foundation in computer science principles, data structures, algorithms, and object-oriented programming. - Hands-on experience or project exposure to Full-Stack web development (specifically React, Node.js, and JavaScript). - Strong understanding of relational and non-relational database architectures (e.g., SQL, MongoDB, MySQL). - Familiarity with version control workflows using Git and GitHub. - Excellent analytical, problem-solving, and collaborative communication skills.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "fc1952eb-a349-4c12-b75d-6b30a72e555a",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "versionId": "5fcd4c97-8f1c-4760-914f-253095d99da1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "72850af799715d3440922a74b09cad4996efa3854a3b3757aaad87b5270bd623"
+  },
+  "id": "vmvIDMtCdbLSxNil",
+  "tags": []
+}
